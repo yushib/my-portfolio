@@ -1,5 +1,15 @@
 # Knowledge Sharing App
 
+A web application designed to improve knowledge sharing inside organizations.
+
+The system allows employees to ask questions anonymously and
+visualizes the contribution level of answers using AI-based sentiment analysis.
+
+Tech Stack:
+Python / Flask / SQLite / SQLAlchemy / Gemini API
+
+---
+
 企業内で「質問しづらい」「質問に回答しても適切に評価されない」という課題を解決するために  
 匿名で気軽に質問できて、回答の貢献度を可視化したアプリケーションを開発しました。
 
@@ -47,7 +57,7 @@
 1. プロジェクト直下に `.env` ファイルを作成してください。
 2. 以下の環境変数を設定してください。
 
-Google_API_KEY=あなたのAPIキー
+Google_API_KEY=your_api_key
 
 ---
 ## 主なディレクトリ構成
