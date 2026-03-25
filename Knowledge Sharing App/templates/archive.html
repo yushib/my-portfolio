@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Knowledge Archive{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="table-responsive">
+            <table class="table table-bordered border-dark-custom align-middle bg-white text-center">
+                <thead>
+                    <tr class="border-bottom border-dark">
+                        <th style="width: 15%;">質問ID</th>
+                        <th style="width: 35%;">質問</th>
+                        <th>回答</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td class="border-dark-custom fw-bold">{{ item.q_id }}</td>
+                        <td class="border-dark-custom text-start">
+                            {{ item.q_content }}
+                        </td>
+                        <td class="border-dark-custom text-start small">
+                            {{ item.summarized_answer }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="text-end mt-2">
+            <a href="{{ url_for('sharing.sharing') }}" class="text-dark small text-decoration-none border-bottom border-dark">
+                Knowledge Sharingページへ
+            </a>
+        </div>
+    </div>
+</div>
+<style>
+    .border-dark-custom { border: 1px solid #000 !important; }
+</style>
+{% endblock %}

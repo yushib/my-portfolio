@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Contribution Management{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-end mb-5">
+        <div class="col-auto">
+            <a href="{{ url_for('managers.analysis', member_id=member_id) }}" class="btn btn-outline-dark btn-sm px-4 fw-bold">分析</a>
+        </div>
+    </div>
+
+    <ul class="nav nav-tabs border-0">
+        {% for m in members %}
+        <li class="nav-item">
+            <a class="nav-link border border-dark rounded-0 px-4 
+                {% if m.user_id == member_id %}active{% endif %} 
+                {% if m.is_rejection %}rejection-tab{% else %}text-dark{% endif %}" 
+                href="{{ url_for('managers.management', member_id=m.user_id) }}"
+                style="margin-right: -1px; margin-bottom: -1px;">
+                {{ m.user_name }}
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <div class="table-responsive">
+        <table class="table table-bordered border-dark mt-0">
+            <thead class="text-center">
+                <tr>
+                    <th style="width: 10%;">質問ID</th>
+                    <th style="width: 25%;">質問内容</th>
+                    <th style="width: 10%;">回答ID</th>
+                    <th style="width: 30%;">回答内容</th>
+                    <th style="width: 25%;">フィードバック</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if contribution_data %}
+                    {% for row in contribution_data %}
+                    <tr>
+                        <td class="text-center">{{ row.q_id }}</td>
+                        <td>{{ row.q_content }}</td>
+                        <td class="text-center">{{ row.a_id }}</td>
+                        <td>{{ row.a_content }}</td>
+                        <td>{{ row.feedback if row.feedback else "" }}</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5">データがありません。</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .rejection-tab {
+        background-color: #ffc107 !important;
+        color: #000 !important;
+    }
+
+    .nav-tabs .nav-link.active.rejection-tab {
+        border-bottom-color: #ffc107 !important;
+    }
+
+    .nav-tabs .nav-link.active:not(.rejection-tab) {
+        background-color: #f8f9fa !important;
+        border-bottom-color: #fff !important;
+    }
+
+    .nav-tabs .nav-link.active {
+        font-weight: bold;
+    }
+    .table th, .table td {
+        padding: 4px 8px;
+        font-size: 0.9rem;
+    }
+    .table thead th {
+        font-weight: normal;
+    }
+</style>
+{% endblock %}

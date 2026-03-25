@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}My Page{% endblock %}
+
+{% block content %}
+<div class="container mt-4" style="max-width: 950px;">
+    
+    <table class="table table-bordered border-dark-custom align-middle text-center mb-3">
+        <thead>
+            <tr class="small">
+                <th style="width: 10%;">質問ID</th>
+                <th style="width: 35%;">質問</th>
+                <th style="width: 10%;">回答ID</th>
+                <th style="width: 35%;">回答</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for q in questions %}
+                {% set a_list = q.answers|reverse|list %}
+                {% set a_count = a_list|length %}
+
+                {% if a_count > 0 %}
+                    {% for a in a_list %}
+                    <tr>
+                        {% if loop.first %}
+                        <td rowspan="{{ a_count }}">{{ q.q_id }}</td>
+                        <td rowspan="{{ a_count }}" class="text-start">{{ q.q_content }}</td>
+                        {% endif %}
+
+                        <td class="p-1">{{ a.a_id }}</td>
+                        <td class="p-1 text-start align-top">
+                            <div class="d-flex justify-content-between align-items-center pe-3">
+                                <span class="me-2">{{ a.a_content }}</span>
+                                <a href="#" class="btn btn-link btn-sm text-dark text-decoration-none small p-0" 
+                                    onclick="toggleFeedback('{{ a.a_id }}'); return false;">feedback</a>
+                            </div>
+
+                            <div id="feedback-box-{{ a.a_id }}" class="d-none mt-2 w-100">
+                                <form action="{{ url_for('mypage.post_feedback', a_id=a.a_id) }}" method="POST" class="border border-dark-custom p-2 w-100">
+                                    <textarea class="form-control form-control-sm border-0 mb-1" name="feedback" rows="2" placeholder="フィードバックを入力してください" style="resize: none; font-size: 0.8rem;" required></textarea>
+                                    <div class="d-flex justify-content-end gap-1">
+                                        <button type="submit" class="btn btn-outline-dark btn-sm py-0 px-2" style="font-size: 0.65rem;">送信</button>
+                                        <button type="button" class="btn btn-outline-dark btn-sm py-0 px-2" style="font-size: 0.65rem;" onclick="toggleFeedback('{{ a.a_id }}')">戻る</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td>{{ q.q_id }}</td>
+                        <td class="text-start">{{ q.q_content }}</td>
+                        <td class="p-1">&nbsp;</td>
+                        <td class="p-1 text-start">&nbsp;</td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="text-end mb-5">
+        <a href="{{ url_for('sharing.sharing') }}" class="text-dark small text-decoration-none">Knowledge Sharingページへ</a>
+    </div>
+</div>
+
+<script>
+function toggleFeedback(a_id) {
+    const target = document.getElementById('feedback-box-' + a_id);
+    target.classList.toggle('d-none');
+}
+</script>
+{% endblock %}

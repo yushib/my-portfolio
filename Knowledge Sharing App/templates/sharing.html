@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}Knowledge Sharing{% endblock %}
+
+{% block content %}
+<div class="container mt-4" style="max-width: 950px;">
+    <table class="table table-bordered border-dark-custom align-middle text-center mb-0">
+        <thead>
+            <tr class="small">
+                <th style="width: 8%;">質問ID</th>
+                <th style="width: 35%;">質問</th>
+                <th style="width: 8%;">回答ID</th>
+                <th style="width: 39%;">回答</th>
+                <th style="width: 10%;">回答期限</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for q in questions %}
+                {% set a_list = q.answers|reverse|list %}
+                {% set a_count = a_list|length %}
+                {% if a_count > 0 %}
+                    {% for a in a_list %}
+                    <tr>
+                        {% if loop.first %}
+                        <td rowspan="{{ a_count }}">{{ q.q_id }}</td>
+                        <td rowspan="{{ a_count }}" class="text-start align-top" style="padding: 10px;">
+                            <div id="q-content-text-{{ q.q_id }}">{{ q.q_content }}</div>
+                            <div id="edit-box-{{ q.q_id }}" class="d-none mt-2 w-100">
+                                <form action="{{ url_for('sharing.update_question', q_id=q.q_id) }}" method="POST" class="border border-dark-custom p-2 w-100">
+                                    <textarea name="q_content" class="form-control form-control-sm border-0 mb-1" rows="2" required>{{ q.q_content }}</textarea>
+                                    <div class="d-flex justify-content-end gap-1 mb-1">
+                                        <button type="submit" class="btn btn-dark btn-sm py-0 px-2" style="font-size: 0.65rem;">更新</button>
+                                        <button type="button" class="btn btn-outline-dark btn-sm py-0 px-2" style="font-size: 0.65rem;" onclick="toggleEdit('{{ q.q_id }}')">戻る</button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div id="answer-box-{{ q.q_id }}" class="d-none mt-2 w-100">
+                                <form action="{{ url_for('sharing.post_answer', q_id=q.q_id) }}" method="POST" class="border border-dark-custom p-2 w-100">
+                                    <textarea name="a_content" class="form-control form-control-sm border-0 mb-1" rows="2" placeholder="回答を入力してください" style="resize: none; font-size: 0.8rem;" required></textarea>
+                                    <div class="d-flex justify-content-end gap-1">
+                                        <button type="submit" class="btn btn-outline-dark btn-sm py-0 px-2" style="font-size: 0.65rem;">送信</button>
+                                        <button type="button" class="btn btn-outline-dark btn-sm py-0 px-2" style="font-size: 0.65rem;" onclick="toggleAnswer('{{ q.q_id }}')">戻る</button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div class="mt-2 text-end">
+                                {% if q.deadline.strftime('%Y-%m-%d') >= q.deadline.now().strftime('%Y-%m-%d') %}
+                                <button type="button" class="btn btn-outline-dark btn-sm py-0 px-1" style="font-size: 0.65rem;" onclick="toggleAnswer('{{ q.q_id }}')">回答</button>
+                                {% endif %}
+
+                                {% if not q.answers %}
+                                <button type="button" class="btn btn-outline-dark btn-sm py-0 px-1" style="font-size: 0.65rem;" onclick="toggleEdit('{{ q.q_id }}')">編集</button>
+                                <form action="{{ url_for('sharing.delete_question', q_id=q.q_id) }}" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-outline-dark btn-sm py-0 px-1" style="font-size: 0.65rem;" onclick="return confirm('本当に削除しますか？')">キャンセル</button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                        {% endif %}
+                        <td class="p-1">{{ a.a_id }}</td>
+                        <td class="p-1 text-start">{{ a.a_content }}</td>
+
+                        {% if loop.first %}
+                        <td rowspan="{{ a_count }}" class="small">{{ q.deadline.strftime('%Y/%m/%d') }}</td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td>{{ q.q_id }}</td>
+                        <td class="text-start align-top" style="padding: 10px;">
+                            <div id="q-content-text-{{ q.q_id }}">{{ q.q_content }}</div>
+
+                            <div id="answer-box-{{ q.q_id }}" class="d-none mt-2 w-100">
+                                <form action="{{ url_for('sharing.post_answer', q_id=q.q_id) }}" method="POST" class="border border-dark-custom p-2 w-100">
+                                    <textarea name="a_content" class="form-control form-control-sm border-0 mb-1" rows="2" placeholder="回答を入力してください" style="resize: none; font-size: 0.8rem;" required></textarea>
+                                    <div class="d-flex justify-content-end gap-1">
+                                        <button type="submit" class="btn btn-outline-dark btn-sm py-0 px-2" style="font-size: 0.65rem;">送信</button>
+                                        <button type="button" class="btn btn-outline-dark btn-sm py-0 px-2" style="font-size: 0.65rem;" onclick="toggleAnswer('{{ q.q_id }}')">戻る</button>
+                                    </div>
+                                </form>
+                            </div>
+                            <div id="edit-box-{{ q.q_id }}" class="d-none mt-2 w-100">
+                                <form action="{{ url_for('sharing.update_question', q_id=q.q_id) }}" method="POST" class="border border-dark-custom p-2 w-100">
+                                    <textarea name="q_content" class="form-control form-control-sm border-0 mb-1" rows="2" required>{{ q.q_content }}</textarea>
+                                    <div class="d-flex justify-content-end gap-1 mb-1">
+                                        <button type="submit" class="btn btn-dark btn-sm py-0 px-2" style="font-size: 0.65rem;">更新</button>
+                                        <button type="button" class="btn btn-outline-dark btn-sm py-0 px-2" style="font-size: 0.65rem;" onclick="toggleEdit('{{ q.q_id }}')">戻る</button>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="mt-2 text-end">
+                                {% if q.deadline.strftime('%Y-%m-%d') >= q.deadline.now().strftime('%Y-%m-%d') %}
+                                <button type="button" class="btn btn-outline-dark btn-sm py-0 px-1" style="font-size: 0.65rem;" onclick="toggleAnswer('{{ q.q_id }}')">回答</button>
+                                {% endif %}
+
+                                {% if not q.answers %}
+                                <button type="button" class="btn btn-outline-dark btn-sm py-0 px-1" style="font-size: 0.65rem;" onclick="toggleEdit('{{ q.q_id }}')">編集</button>
+
+                                <form action="{{ url_for('sharing.delete_question', q_id=q.q_id) }}" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-outline-dark btn-sm py-0 px-1" style="font-size: 0.65rem;" onclick="return confirm('本当に削除しますか？')">キャンセル</button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+
+                        <td class="p-1">&nbsp;</td>
+                        <td class="p-1 text-start">&nbsp;</td>
+                        <td class="small">{{ q.deadline.strftime('%Y/%m/%d') }}</td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="text-end mt-1">
+        <a href="{{ url_for('archive.archive_index') }}" class="text-dark small text-decoration-none">
+            Knowledge Archiveページへ
+</a>
+
+
+    </div>
+
+    <form action="{{ url_for('sharing.post_question') }}" method="POST" class="border border-dark-custom mb-1 mt-4">                
+        <div class="row g-0">
+            <div class="col border-end border-dark-custom position-relative">
+                <textarea name="q_content" class="form-control border-0 rounded-0" rows="4" placeholder="質問を入力してください。" style="resize: none;" required></textarea>
+                <button type="submit" class="btn btn-outline-dark btn-sm"
+                        style="position: absolute; right: 10px; bottom: 10px; font-size: 0.75rem; padding: 2px 8px;">
+                    登録
+                </button>
+            </div>
+            <div class="col-auto" style="width: 120px;">
+                <div class="text-center small py-1 border-bottom border-dark-custom">回答期限</div>
+                <div class="d-flex align-items-center justify-content-center" style="height: calc(100% - 31px);">
+                    <input type="date" name="deadline" class="form-control form-control-sm border-0 text-center bg-transparent" required>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <div class="text-end mb-3">                
+        <a href="{{ url_for('mypage.mypage') }}" class="text-dark small text-decoration-none">My Pageへ</a>
+    </div>
+</div>
+
+<script>
+function toggleAnswer(id) {
+    const target = document.getElementById('answer-box-' + id);
+    const editBox = document.getElementById('edit-box-' + id);
+    if (!editBox.classList.contains('d-none')) {
+        editBox.classList.add('d-none');
+        document.getElementById('q-content-text-' + id).classList.remove('d-none');
+    }
+    target.classList.toggle('d-none');
+}
+
+function toggleEdit(id) {
+    const editBox = document.getElementById('edit-box-' + id);
+    const textBox = document.getElementById('q-content-text-' + id);
+    const answerBox = document.getElementById('answer-box-' + id);
+
+    if (!answerBox.classList.contains('d-none')) {
+        answerBox.classList.add('d-none');
+    }
+    editBox.classList.toggle('d-none');
+    textBox.classList.toggle('d-none');
+}
+</script>
+{% endblock %}

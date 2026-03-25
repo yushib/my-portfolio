@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* 画面全体に薄い背景色を適用し、中途半端な余白をなくす */
+        body { 
+            font-family: sans-serif; 
+            color: black; 
+            background-color: #f4f7f8; /* 落ち着いた薄いグレーブルー */
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 枠線設定を維持 */
+        .border-dark-custom { border: 1px solid #000 !important; }
+        .text-decoration-none { text-decoration: none !important; }
+        a.text-dark:hover { text-decoration: underline !important; }
+
+        /* ヘッダー：背景色の上に乗る白い帯として定義 */
+        header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #000;
+            padding: 15px 0;
+        }
+
+        /* ログアウトボタン */
+        .logout-link {
+            border: 1px solid #000;
+            padding: 2px 12px;
+            color: black;
+            text-decoration: none;
+            font-size: 0.85rem;
+        }
+        .logout-link:hover {
+            background-color: #000;
+            color: #fff !important;
+        }
+
+        /* コンテンツエリア：背景色と馴染むよう、白背景を全面に広げず表自体に持たせる */
+        .main-container {
+            margin-top: 40px;
+            margin-bottom: 40px;
+        }
+
+        /* テーブル自体の背景を白に固定 */
+        table {
+            background-color: #ffffff !important;
+        }
+    </style>
+</head>
+<body>
+
+    {% if current_user.is_authenticated %}
+    <header class="container-fluid">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col text-center">
+                    <h4 class="mb-0 fw-bold">{% block title %}{% endblock %}</h4>
+                </div>
+                <div class="col-auto">
+                    <a href="{{ url_for('auth.logout') }}" class="logout-link">ログアウト</a>
+                </div>
+            </div>
+        </div>
+    </header>
+    {% endif %}
+
+    <div class="container main-container">
+        {% block content %}{% endblock %}
+    </div>
+
+</body>
+</html>

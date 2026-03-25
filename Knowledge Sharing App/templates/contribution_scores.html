@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Contribution Scores{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3">
+
+    <div class="d-flex justify-content-end mb-2">
+        <form action="{{ url_for('contributionscores.finalize_user') }}" method="POST">
+            <button type="submit" class="btn btn-outline-dark px-4">一括確定</button>
+        </form>
+    </div>
+
+    {% set items = (report_data.items() | sort(attribute='1.user_id')) | list %}
+
+    <table class="table table-bordered border-dark align-middle mb-0">
+        <thead class="table-light text-center">
+            <tr>
+                <th style="width: 8%;">従業員ID</th>
+                <th style="width: 12%;">従業員</th>
+                <th style="width: 8%;">合計</th>
+                <th style="width: 12%;">マネージャー</th>
+                <th style="width: 45%;">修正理由</th>
+                <th style="width: 15%;">ステータス</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for user_item in items %}
+                {% set user_name = user_item[0] %}
+                {% set data = user_item[1] %}
+                {% set i = loop.index0 %}
+
+                {% set is_run_start = (i == 0) or (items[i-1][1].manager_name != data.manager_name) %}
+
+                {% if is_run_start %}
+                    {% set ns = namespace(run=0, found_end=false) %}
+                    {% for j in range(i, items|length) %}
+                        {% if not ns.found_end %}
+                            {% if items[j][1].manager_name == data.manager_name %}
+                                {% set ns.run = ns.run + 1 %}
+                            {% else %}
+                                {% set ns.found_end = true %}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+
+                <tr class="{% if data.is_rejection %}table-warning{% endif %}">
+                    <td class="text-center">{{ data.user_id }}</td>
+                    <td>{{ user_name }}</td>
+                    <td class="text-center">{{ data.total_points }}</td>
+
+                    {% if is_run_start %}
+                        <td class="text-center" rowspan="{{ ns.run }}">
+                            {{ data.manager_name }}
+                        </td>
+                    {% endif %}
+
+                    <td class="p-0">
+                        <table class="reasons-table mb-0">
+                            <tbody>
+                                {% for detail in data.details %}
+                                    <tr class="reason-row">
+                                        <td class="py-2 px-3" {% if detail.is_resolved and not data.is_finalized %} style="background-color: yellow;" {% endif %}>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <strong>回答ID{{ detail.a_id }}、{{ detail.ai_score }}→{{ detail.revised_score }}：</strong> {{ detail.mgr_comment }}
+                                                </div>
+                                                <button type="button" class="btn btn-outline-dark btn-sm py-0 text-nowrap flex-shrink-0" 
+                                                        style="font-size: 0.8rem;" onclick="toggleReturnBox('{{ detail.a_id }}')"
+                                                        {% if data.is_finalized %} disabled {% endif %}>
+                                                    差戻
+                                                </button>
+                                            </div>
+
+                                            <div id="return-box-{{ detail.a_id }}" class="d-none mt-2 w-100">
+                                                <form action="{{ url_for('contributionscores.send_hr_comment') }}" method="POST" class="border border-dark p-2 w-100">
+                                                    <input type="hidden" name="a_id" value="{{ detail.a_id }}">
+                                                    <input type="hidden" name="user_id" value="{{ data.user_id }}">
+                                                    <div class="mb-1 small">差戻理由：</div>
+                                                    <textarea name="hr_comment" class="form-control form-control-sm mb-2" rows="3" 
+                                                            placeholder="差戻の理由を入力してください" style="resize: none; font-size: 0.8rem;" required></textarea>
+                                                    <div class="d-flex justify-content-end gap-1">
+                                                        <button type="submit" class="btn btn-outline-dark btn-sm py-0 px-2" style="font-size: 0.75rem;">送信</button>
+                                                        <button type="button" class="btn btn-outline-dark btn-sm py-0 px-2" style="font-size: 0.75rem;" 
+                                                                onclick="toggleReturnBox('{{ detail.a_id }}')">取消</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+
+                                {% if not data.details %}
+                                    <tr>
+                                        <td class="py-2 px-3">&nbsp;</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </td>
+
+                    <td class="text-center">
+                        {% if data.is_finalized %}
+                            <span class="text-muted small">確定済み</span>
+                        {% else %}
+                            <form action="{{ url_for('contributionscores.finalize_user') }}" method="POST" class="m-0">
+                                <input type="hidden" name="user_id" value="{{ data.user_id }}">
+                                <button type="submit" class="btn btn-outline-dark btn-sm w-75">確定</button>
+                            </form>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+    .table, .reasons-table {
+        border-collapse: collapse !important;
+        border-spacing: 0 !important;
+        width: 100% !important;
+    }
+    
+    .table, .table td, .table th,
+    .table-bordered, .table-bordered td, .table-bordered th {
+        border: 1px solid #000 !important;
+    }
+
+    
+    
+    .table thead th {
+        border-bottom: 1px solid #000 !important;
+    }
+
+    .reasons-table .reason-row {
+        border-bottom: none !important;
+    }
+    .reasons-table .reason-row + .reason-row {
+        border-top: 1px solid #000 !important;
+    }
+    
+
+    .reasons-table td {
+        border-top: none !important;
+        border-bottom: none !important;
+        border-left: none !important; 
+        border-right: none !important;
+    }
+
+
+    .reasons-table tbody tr:first-child td {
+        border-top: none !important;
+    }
+</style>
+<script>
+function toggleReturnBox(id) {
+    const target = document.getElementById('return-box-' + id);
+    if (target) {
+        target.classList.toggle('d-none');
+    }
+}
+</script>
+{% endblock %}
